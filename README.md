@@ -276,23 +276,37 @@ El script calificará automáticamente (100 puntos total):
 TOTAL:                        95 / 100
 ```
 
-## ✅ Criterios de Evaluación (100 puntos)
+## ✅ Criterios de Evaluación (100 puntos = 80 automático + 20 manual)
 
 ### Sistema de Calificación
 
 Este examen se divide en **2 partes**:
 
-#### Parte 1: ARQUITECTURA (100 puntos) - Calificación Automática
+#### Parte 1: ARQUITECTURA (80 puntos) - Calificación Automática ⚙️
 
 El script `calificar_todos.sh` evalúa automáticamente:
 
 | Sección | Puntos | Qué se evalúa |
 |---------|--------|---------------|
-| **1. Docker Compose** | 30 | • Archivo existe (10 pts)<br>• Sintaxis YAML válida (10 pts)<br>• 4 servicios definidos (10 pts) |
-| **2. Contenedores** | 25 | • postgres-america corriendo (6 pts)<br>• mysql-europe corriendo (6 pts)<br>• symmetricds-america corriendo (7 pts)<br>• symmetricds-europe corriendo (6 pts) |
-| **3. Bases de Datos** | 20 | • Conexión PostgreSQL (7 pts)<br>• 4 tablas creadas en PostgreSQL (6 pts)<br>• Conexión MySQL (7 pts) |
-| **4. SymmetricDS** | 25 | • Tablas SymmetricDS en PostgreSQL (10 pts)<br>• Tablas SymmetricDS en MySQL (10 pts)<br>• Grupos de nodos configurados (5 pts) |
-| **TOTAL** | **100** | |
+| **1. Docker Compose** | 25 | • Archivo existe (8 pts)<br>• Sintaxis YAML válida (8 pts)<br>• 4 servicios definidos (9 pts) |
+| **2. Contenedores** | 20 | • postgres-america corriendo (5 pts)<br>• mysql-europe corriendo (5 pts)<br>• symmetricds-america corriendo (5 pts)<br>• symmetricds-europe corriendo (5 pts) |
+| **3. Bases de Datos** | 15 | • Conexión PostgreSQL (5 pts)<br>• 4 tablas creadas (5 pts)<br>• Conexión MySQL (5 pts) |
+| **4. SymmetricDS** | 20 | • Tablas SymmetricDS en PostgreSQL (8 pts)<br>• Tablas SymmetricDS en MySQL (8 pts)<br>• Grupos de nodos configurados (4 pts) |
+| **SUBTOTAL AUTOMÁTICO** | **80** | |
+
+#### Parte 2: EVIDENCIAS DE REPLICACIÓN (20 puntos) - Calificación Manual 📸
+
+Debes crear una carpeta `replication-proofs/` en tu rama con capturas que demuestren:
+
+| Evidencia | Puntos | Qué Mostrar |
+|-----------|--------|-------------|
+| **1. INSERT PG → MySQL** | 5 | Insertar en PostgreSQL, mostrar en MySQL |
+| **2. INSERT MySQL → PG** | 5 | Insertar en MySQL, mostrar en PostgreSQL |
+| **3. UPDATE bidireccional** | 5 | UPDATE en una BD, verificar en la otra |
+| **4. DELETE bidireccional** | 5 | DELETE en una BD, verificar en la otra |
+| **SUBTOTAL MANUAL** | **20** | |
+
+**TOTAL EXAMEN: 100 puntos (80 automático + 20 manual)**
 
 #### Parte 2: EVIDENCIAS DE REPLICACIÓN (Entrega Manual)
 
@@ -357,7 +371,11 @@ El script `calificar_todos.sh` evalúa automáticamente:
 - Deben ser legibles (texto visible)
 - Incluir timestamp o comando completo
 - Mostrar AMBAS bases de datos en cada operación
-- Guardar como: `capturas/01_insert_pg_mysql.png`, `02_insert_mysql_pg.png`, etc.
+- Guardar en: `replication-proofs/01_insert_pg_mysql.png`, `02_insert_mysql_pg.png`, etc.
+
+**Puntuación:**
+- Cada captura vale 5 puntos
+- Total: 20 puntos (calificación manual del profesor)
 
 ### Escala de Calificación
 
@@ -561,9 +579,25 @@ La replicación bidireccional está funcionando correctamente en ambas direccion
 ### Subir Evidencias
 
 ```bash
-git add evidencias/
+git add replication-proofs/
 git commit -m "Add: Evidencias de replicación bidireccional"
 git push origin student/nombre_apellido_cedula
+```
+
+### Estructura Final de tu Rama
+
+```
+student/tu_nombre_apellido_cedula/
+├── docker-compose.yml                    ← Tu solución
+├── symmetricds/                          ← Configuraciones completadas
+│   ├── america/...
+│   └── europe/...
+└── replication-proofs/                   ← Tus evidencias (20pts)
+    ├── 01_insert_pg_to_mysql.png
+    ├── 02_insert_mysql_to_pg.png
+    ├── 03_update_bidireccional.png
+    ├── 04_delete_bidireccional.png
+    └── README.md
 ```
 
 ## 📞 Soporte

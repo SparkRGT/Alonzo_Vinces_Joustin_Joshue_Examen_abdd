@@ -79,37 +79,40 @@ calificar_estudiante() {
         return 1
     fi
     
-    # Variables de puntuación
+    # Variables de puntuación (80 pts automático + 20 pts manual)
     local docker_compose_pts=0
     local contenedores_pts=0
-    local configuracion_pts=0
     local bd_funcionamiento_pts=0
     local symmetricds_pts=0
     local total_pts=0
     local tests_passed=0
     local tests_total=14
     
-    # ========== 1. DOCKER COMPOSE (30 pts) ==========
-    echo -e "${YELLOW}[1/5]${NC} Validando Docker Compose..."
+    # 20 puntos manuales (replication-proofs)
+    local manual_pts=0
+    local manual_max=20
     
-    # 1.1 Archivo existe (10pts)
+    # ========== 1. DOCKER COMPOSE (25 pts) ==========
+    echo -e "${YELLOW}[1/4]${NC} Validando Docker Compose..."
+    
+    # 1.1 Archivo existe (8pts)
     if [ -f "docker-compose.yml" ]; then
-        ((docker_compose_pts+=10))
+        ((docker_compose_pts+=8))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ Archivo existe (+10pts)${NC}"
+        echo -e "${GREEN}  ✓ Archivo existe (+8pts)${NC}"
         
-        # 1.2 Sintaxis válida (10pts)
+        # 1.2 Sintaxis válida (8pts)
         if docker compose config > /dev/null 2>&1; then
-            ((docker_compose_pts+=10))
+            ((docker_compose_pts+=8))
             ((tests_passed++))
-            echo -e "${GREEN}  ✓ Sintaxis YAML válida (+10pts)${NC}"
+            echo -e "${GREEN}  ✓ Sintaxis YAML válida (+8pts)${NC}"
             
-            # 1.3 4 servicios (10pts - 2.5 c/u)
+            # 1.3 4 servicios (9pts)
             local config_output=$(docker compose config 2>/dev/null)
             local services_pts=0
             
             if echo "$config_output" | grep -q "postgres-america:"; then
-                ((services_pts+=3))
+                ((services_pts+=2))
                 ((tests_passed++))
             fi
             
@@ -137,10 +140,10 @@ calificar_estudiante() {
         echo -e "${RED}  ✗ Archivo no existe (0pts)${NC}"
     fi
     
-    echo -e "${BLUE}  Subtotal: ${BOLD}$docker_compose_pts / 30 pts${NC}"
+    echo -e "${BLUE}  Subtotal: ${BOLD}$docker_compose_pts / 25 pts${NC}"
     
-    # ========== 2. CONTENEDORES (25 pts) ==========
-    echo -e "${YELLOW}[2/5]${NC} Levantando y validando contenedores..."
+    # ========== 2. CONTENEDORES (20 pts) ==========
+    echo -e "${YELLOW}[2/4]${NC} Levantando y validando contenedores..."
     
     # Limpiar ambiente
     docker compose down -v > /dev/null 2>&1 || true
@@ -149,38 +152,38 @@ calificar_estudiante() {
         echo -e "${BLUE}  Esperando 60 segundos...${NC}"
         sleep 60
         
-        # 2.1 PostgreSQL (6pts)
+        # 2.1 PostgreSQL (5pts)
         if docker compose ps | grep -q "postgres-america.*Up"; then
-            ((contenedores_pts+=6))
+            ((contenedores_pts+=5))
             ((tests_passed++))
-            echo -e "${GREEN}  ✓ postgres-america corriendo (+6pts)${NC}"
+            echo -e "${GREEN}  ✓ postgres-america corriendo (+5pts)${NC}"
         else
             echo -e "${RED}  ✗ postgres-america no corriendo (0pts)${NC}"
         fi
         
-        # 2.2 MySQL (6pts)
+        # 2.2 MySQL (5pts)
         if docker compose ps | grep -q "mysql-europe.*Up"; then
-            ((contenedores_pts+=6))
+            ((contenedores_pts+=5))
             ((tests_passed++))
-            echo -e "${GREEN}  ✓ mysql-europe corriendo (+6pts)${NC}"
+            echo -e "${GREEN}  ✓ mysql-europe corriendo (+5pts)${NC}"
         else
             echo -e "${RED}  ✗ mysql-europe no corriendo (0pts)${NC}"
         fi
         
-        # 2.3 SymmetricDS América (7pts)
+        # 2.3 SymmetricDS América (5pts)
         if docker compose ps | grep -q "symmetricds-america.*Up"; then
-            ((contenedores_pts+=7))
+            ((contenedores_pts+=5))
             ((tests_passed++))
-            echo -e "${GREEN}  ✓ symmetricds-america corriendo (+7pts)${NC}"
+            echo -e "${GREEN}  ✓ symmetricds-america corriendo (+5pts)${NC}"
         else
             echo -e "${RED}  ✗ symmetricds-america no corriendo (0pts)${NC}"
         fi
         
-        # 2.4 SymmetricDS Europa (6pts)
+        # 2.4 SymmetricDS Europa (5pts)
         if docker compose ps | grep -q "symmetricds-europe.*Up"; then
-            ((contenedores_pts+=6))
+            ((contenedores_pts+=5))
             ((tests_passed++))
-            echo -e "${GREEN}  ✓ symmetricds-europe corriendo (+6pts)${NC}"
+            echo -e "${GREEN}  ✓ symmetricds-europe corriendo (+5pts)${NC}"
         else
             echo -e "${RED}  ✗ symmetricds-europe no corriendo (0pts)${NC}"
         fi
@@ -188,79 +191,92 @@ calificar_estudiante() {
         echo -e "${RED}  ✗ Error al levantar servicios (0pts)${NC}"
     fi
     
-    echo -e "${BLUE}  Subtotal: ${BOLD}$contenedores_pts / 25 pts${NC}"
+    echo -e "${BLUE}  Subtotal: ${BOLD}$contenedores_pts / 20 pts${NC}"
     
-    # ========== 3. BASES DE DATOS (20 pts) ==========
-    echo -e "${YELLOW}[3/5]${NC} Validando bases de datos..."
+    # ========== 3. BASES DE DATOS (15 pts) ==========
+    echo -e "${YELLOW}[3/4]${NC} Validando bases de datos..."
     
-    # 3.1 Conexión PostgreSQL (7pts)
+    # 3.1 Conexión PostgreSQL (5pts)
     if docker exec postgres-america psql -U symmetricds -d globalshop -c "SELECT 1;" > /dev/null 2>&1; then
-        ((bd_funcionamiento_pts+=7))
+        ((bd_funcionamiento_pts+=5))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ Conexión PostgreSQL (+7pts)${NC}"
+        echo -e "${GREEN}  ✓ Conexión PostgreSQL (+5pts)${NC}"
     else
         echo -e "${RED}  ✗ Sin conexión PostgreSQL (0pts)${NC}"
     fi
     
-    # 3.2 Tablas en PostgreSQL (6pts)
+    # 3.2 Tablas en PostgreSQL (5pts)
     local pg_tables=$(docker exec postgres-america psql -U symmetricds -d globalshop -t -c \
         "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('products','inventory','customers','promotions');" 2>/dev/null | tr -d ' ')
     if [ "$pg_tables" = "4" ]; then
-        ((bd_funcionamiento_pts+=6))
+        ((bd_funcionamiento_pts+=5))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ 4 tablas en PostgreSQL (+6pts)${NC}"
+        echo -e "${GREEN}  ✓ 4 tablas en PostgreSQL (+5pts)${NC}"
     else
         echo -e "${RED}  ✗ Tablas faltantes: $pg_tables/4 (0pts)${NC}"
     fi
     
-    # 3.3 Conexión MySQL (7pts)
+    # 3.3 Conexión MySQL (5pts)
     if docker exec mysql-europe mysql -u symmetricds -psymmetricds globalshop -e "SELECT 1;" > /dev/null 2>&1; then
-        ((bd_funcionamiento_pts+=7))
+        ((bd_funcionamiento_pts+=5))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ Conexión MySQL (+7pts)${NC}"
+        echo -e "${GREEN}  ✓ Conexión MySQL (+5pts)${NC}"
     else
         echo -e "${RED}  ✗ Sin conexión MySQL (0pts)${NC}"
     fi
     
-    echo -e "${BLUE}  Subtotal: ${BOLD}$bd_funcionamiento_pts / 20 pts${NC}"
+    echo -e "${BLUE}  Subtotal: ${BOLD}$bd_funcionamiento_pts / 15 pts${NC}"
     
-    # ========== 4. SYMMETRICDS (25 pts) ==========
-    echo -e "${YELLOW}[4/5]${NC} Validando SymmetricDS..."
+    # ========== 4. SYMMETRICDS (20 pts) ==========
+    echo -e "${YELLOW}[4/4]${NC} Validando SymmetricDS..."
     
-    # 4.1 Tablas SymmetricDS en PostgreSQL (10pts)
+    # 4.1 Tablas SymmetricDS en PostgreSQL (8pts)
     local sym_tables=$(docker exec postgres-america psql -U symmetricds -d globalshop -t -c \
         "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE 'sym_%';" 2>/dev/null | tr -d ' ')
     if [ "$sym_tables" -gt 30 ]; then
-        ((symmetricds_pts+=10))
+        ((symmetricds_pts+=8))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ Tablas SymmetricDS en PostgreSQL: $sym_tables (+10pts)${NC}"
+        echo -e "${GREEN}  ✓ Tablas SymmetricDS en PostgreSQL: $sym_tables (+8pts)${NC}"
     else
         echo -e "${RED}  ✗ Tablas SymmetricDS insuficientes: $sym_tables (0pts)${NC}"
     fi
     
-    # 4.2 Tablas SymmetricDS en MySQL (10pts)
+    # 4.2 Tablas SymmetricDS en MySQL (8pts)
     local sym_tables_mysql=$(docker exec mysql-europe mysql -u symmetricds -psymmetricds globalshop -N -e \
         "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='globalshop' AND table_name LIKE 'sym_%';" 2>/dev/null)
     if [ "$sym_tables_mysql" -gt 30 ]; then
-        ((symmetricds_pts+=10))
+        ((symmetricds_pts+=8))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ Tablas SymmetricDS en MySQL: $sym_tables_mysql (+10pts)${NC}"
+        echo -e "${GREEN}  ✓ Tablas SymmetricDS en MySQL: $sym_tables_mysql (+8pts)${NC}"
     else
         echo -e "${RED}  ✗ Tablas SymmetricDS insuficientes: $sym_tables_mysql (0pts)${NC}"
     fi
     
-    # 4.3 Grupos de nodos configurados (5pts)
+    # 4.3 Grupos de nodos configurados (4pts)
     local node_groups=$(docker exec postgres-america psql -U symmetricds -d globalshop -t -c \
         "SELECT COUNT(*) FROM sym_node_group;" 2>/dev/null | tr -d ' ')
     if [ "$node_groups" -ge 2 ]; then
-        ((symmetricds_pts+=5))
+        ((symmetricds_pts+=4))
         ((tests_passed++))
-        echo -e "${GREEN}  ✓ Grupos de nodos: $node_groups (+5pts)${NC}"
+        echo -e "${GREEN}  ✓ Grupos de nodos: $node_groups (+4pts)${NC}"
     else
         echo -e "${RED}  ✗ Grupos insuficientes: $node_groups (0pts)${NC}"
     fi
     
-    echo -e "${BLUE}  Subtotal: ${BOLD}$symmetricds_pts / 25 pts${NC}"
+    echo -e "${BLUE}  Subtotal: ${BOLD}$symmetricds_pts / 20 pts${NC}"
+    
+    # ========== 5. VERIFICAR CARPETA REPLICATION-PROOFS (0 pts - solo info) ==========
+    echo ""
+    echo -e "${YELLOW}[INFO]${NC} Verificando carpeta de evidencias..."
+    if [ -d "replication-proofs" ]; then
+        local num_files=$(ls -1 replication-proofs/*.png replication-proofs/*.jpg 2>/dev/null | wc -l)
+        echo -e "${GREEN}  ✓ Carpeta replication-proofs existe${NC}"
+        echo -e "${BLUE}  ℹ Archivos encontrados: $num_files${NC}"
+        echo -e "${YELLOW}  → Calificación manual: 0-20 pts (revisar capturas)${NC}"
+    else
+        echo -e "${RED}  ✗ Carpeta replication-proofs NO existe${NC}"
+        echo -e "${YELLOW}  → Calificación manual: 0 pts${NC}"
+    fi
     
     # ========== CALCULAR TOTAL ==========
     total_pts=$((docker_compose_pts + contenedores_pts + bd_funcionamiento_pts + symmetricds_pts))
@@ -292,8 +308,13 @@ calificar_estudiante() {
     fi
     
     echo ""
-    echo -e "${BOLD}Resultado: $total_pts / 100 pts - ${nota}${NC}"
-    echo -e "${YELLOW}Nota: La replicación debe demostrarse con capturas de pantalla${NC}"
+    echo -e "${BOLD}┌────────────────────────────────────────────┐${NC}"
+    echo -e "${BOLD}│ ARQUITECTURA: $total_pts / 80 pts${NC}"
+    echo -e "${BOLD}│ REPLICACIÓN:  manual / 20 pts${NC}"
+    echo -e "${BOLD}├────────────────────────────────────────────┤${NC}"
+    echo -e "${BOLD}│ SUBTOTAL:     $total_pts / 80 pts - ${nota}${NC}"
+    echo -e "${BOLD}└────────────────────────────────────────────┘${NC}"
+    echo -e "${YELLOW}Nota: Revisar carpeta replication-proofs/ para los 20 pts restantes${NC}"
     echo ""
     
     ((SUMA_CALIFICACIONES+=total_pts))
@@ -334,16 +355,25 @@ Cédula: $student_id
 Rama: $branch
 Fecha: $(date)
 
-CALIFICACIÓN ARQUITECTURA:
-  Total: $total_pts / 100
-  Nota: $nota
+CALIFICACIÓN ARQUITECTURA (AUTOMÁTICA):
+  Subtotal: $total_pts / 80
+  Nota parcial: $nota
   Estado: $([ "$aprobado" = "true" ] && echo "APROBADO ✓" || echo "REPROBADO ✗")
 
-DESGLOSE:
-  1. Docker Compose (estructura)     $docker_compose_pts / 30
-  2. Contenedores (ejecución)        $contenedores_pts / 25
-  3. Bases de Datos (funcionamiento) $bd_funcionamiento_pts / 20
-  4. SymmetricDS (configuración)     $symmetricds_pts / 25
+DESGLOSE AUTOMÁTICO:
+  1. Docker Compose (estructura)     $docker_compose_pts / 25
+  2. Contenedores (ejecución)        $contenedores_pts / 20
+  3. Bases de Datos (funcionamiento) $bd_funcionamiento_pts / 15
+  4. SymmetricDS (configuración)     $symmetricds_pts / 20
+
+CALIFICACIÓN MANUAL (PENDIENTE):
+  5. Evidencias de Replicación       ?? / 20
+     → Revisar carpeta: replication-proofs/
+     → 5 capturas de pantalla requeridas
+     → Ver README.md sección "Evidencias"
+
+CALIFICACIÓN FINAL:
+  Total = Arquitectura (80) + Replicación Manual (20) = ?? / 100
 
 ESTADÍSTICAS:
   Tests pasados: $tests_passed / $tests_total
